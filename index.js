@@ -11,7 +11,7 @@ const input = {
   fullchainFile: core.getInput("fullchain-file"),
   keyFile: core.getInput("key-file"),
   certificateName: core.getInput("certificate-name"),
-  cdnDomains: core.getInput("cdn-domains"),
+  cdnDomains: core.getInput("cdn-domains", { required: false }),
   timeout: parseInt(core.getInput("timeout")) || 10000,
   retry: parseInt(core.getInput("retry")) || 3,
   useIntlEndpoint: core.getBooleanInput("use-intl-endpoint") || false

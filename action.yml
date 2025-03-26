@@ -24,7 +24,7 @@ inputs:
     required: true
   cdn-domains:
     description: Enter a list of CDN domains you want to deploy the certificate to.
-    required: true
+    required: false
   timeout:
     description: Determine the timeout for sending requests to the Aliyun API
     default: '10000'
