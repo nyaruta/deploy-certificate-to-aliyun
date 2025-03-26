@@ -69,6 +69,7 @@ async function deletePreviouslyDeployedCertificate() {
    * @param {(item: CertificateOrderListItem) => Promise<void>} callback
    */
   async function listCertificates(callback) {
+    const domains = Array.from(new Set(input.cdnDomains.split(/\s+/).filter(x => x)))[0];
     const ALL_STATUS = ["ISSUED", "WILLEXPIRED", "EXPIRED"];
     for (const status of ALL_STATUS) {
       let currentItems = 0;
@@ -77,25 +78,29 @@ async function deletePreviouslyDeployedCertificate() {
         /**
          * @type {ListUserCertificateOrderResponse}
          */
-        const response = await callAliyunApi(
-          casEndpoint, "2020-04-07",
-          "ListUserCertificateOrder",
-          {
-            Status: status,
-            OrderType: "CERT",
-            ShowSize: 50,
-            CurrentPage: i
-          }
-        );
+        for (const domain of domains) {
+          const response = await callAliyunApi(
+            casEndpoint, "2020-04-07",
+            "ListUserCertificateOrder",
+            {
+              Keyword: domain,
+              Status: status,
+              OrderType: "CERT",
+              ShowSize: 50,
+              CurrentPage: i
+           }
+         );
+        
 
-        for (const item of response.CertificateOrderList)
-          await callback(item);
+          for (const item of response.CertificateOrderList)
+            await callback(item);
 
-        currentItems += response.CertificateOrderList.length;
-        if (currentItems === response.TotalCount) break;
+          currentItems += response.CertificateOrderList.length;
+          if (currentItems === response.TotalCount) break;
       }
     }
   }
+}
 
   let foundId = 0;
   await listCertificates(async item => {
@@ -127,7 +132,7 @@ async function deployCertificate() {
   const fullchain = fs.readFileSync(input.fullchainFile, "utf-8");
   const key = fs.readFileSync(input.keyFile, "utf-8");
 
-  await deletePreviouslyDeployedCertificate();
+  if (input.cdnDomains) await deletePreviouslyDeployedCertificate();
 
   const response = await callAliyunApi(
     casEndpoint, "2020-04-07",
